@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const http = require("http");
+const https = require("https");
 const { Server } = require("socket.io");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -21,12 +22,6 @@ app.use("/api/users", require("./routes/users"));
 app.use("/api/chats", require("./routes/chats"));
 app.use("/api/messages", require("./routes/messages"));
 app.use("/api/posts", require("./routes/posts"));
-
-// Serve frontend build
-app.use(express.static(path.join(__dirname, "build")));
-app.get("/{*path}", (req, res) => {
-    res.sendFile(path.join(__dirname, "build", "index.html"));
-});
 
 // Socket.io
 const onlineUsers = new Map();
@@ -55,8 +50,17 @@ io.on("connection", (socket) => {
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log("MongoDB connected");
-        server.listen(process.env.PORT, () =>
-            console.log(`Server running on port ${process.env.PORT}`)
-        );
+        server.listen(process.env.PORT, () => {
+            console.log(`Server running on port ${process.env.PORT}`);
+
+            // Keep-alive ping every 14 minutes
+            setInterval(() => {
+                https.get("https://chatapp-backend-vdlu.onrender.com", (res) => {
+                    console.log("Keep-alive ping:", res.statusCode);
+                }).on("error", (err) => {
+                    console.log("Ping error:", err.message);
+                });
+            }, 14 * 60 * 1000);
+        });
     })
     .catch((err) => console.error("DB Error:", err.message));
