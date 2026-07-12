@@ -22,6 +22,7 @@ app.use("/api/users", require("./routes/users"));
 app.use("/api/chats", require("./routes/chats"));
 app.use("/api/messages", require("./routes/messages"));
 app.use("/api/posts", require("./routes/posts"));
+app.use("/api/admin", require("./routes/admin"));
 
 // Socket.io
 const onlineUsers = new Map();
