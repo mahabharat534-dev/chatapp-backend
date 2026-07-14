@@ -42,6 +42,7 @@ router.post("/group", protect, async (req, res) => {
     const populated = await Chat.findById(chat._id)
         .populate("participants", "name email avatar isOnline");
     res.status(201).json(populated);
+    pinnedBy: [{ type: ObjectId, ref: "User" }]
 });
 
 module.exports = router;

@@ -14,9 +14,10 @@ router.get("/", protect, async (req, res) => {
 });
 
 // Create post
+// Create post
 router.post("/", protect, async (req, res) => {
-    const { content, image } = req.body;
-    const post = await Post.create({ author: req.user._id, content, image });
+    const { content, images } = req.body;
+    const post = await Post.create({ author: req.user._id, content, images: images || [] });
     const populated = await Post.findById(post._id).populate("author", "name avatar");
     res.status(201).json(populated);
 });
