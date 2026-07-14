@@ -44,5 +44,29 @@ router.post("/group", protect, async (req, res) => {
     res.status(201).json(populated);
     pinnedBy: [{ type: ObjectId, ref: "User" }]
 });
+// Pin / unpin a chat
+router.post("/pin/:id", protect, async (req, res) => {
+    try {
+        const chat = await Chat.findById(req.params.id);
+        if (!chat) return res.status(404).json({ message: "Chat not found" });
+
+        const alreadyPinned = chat.pinnedBy.includes(req.user._id);
+        if (alreadyPinned) {
+            chat.pinnedBy = chat.pinnedBy.filter(
+                (id) => id.toString() !== req.user._id.toString()
+            );
+        } else {
+            chat.pinnedBy.push(req.user._id);
+        }
+        await chat.save();
+
+        const populated = await Chat.findById(chat._id)
+            .populate("participants", "name email avatar isOnline lastSeen")
+            .populate("lastMessage");
+        res.json(populated);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
 module.exports = router;
